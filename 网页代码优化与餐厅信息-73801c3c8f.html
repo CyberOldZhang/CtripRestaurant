@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凌空SOHO周边餐饮选择器</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        @keyframes flip {
+            0% { transform: rotateY(0); }
+            50% { transform: rotateY(90deg); }
+            100% { transform: rotateY(0); }
+        }
+        .flip-animation {
+            animation: flip 0.8s ease-in-out;
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px 0 rgba(31, 38, 135, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-center mb-8 text-indigo-700">
+            <i class="fas fa-utensils mr-2"></i>凌空SOHO周边餐饮选择器
+        </h1>
+
+        <div class="glassmorphism p-6 mb-8">
+            <div class="flex flex-wrap gap-4 mb-6">
+                <div class="w-full md:w-auto">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">餐饮类型</label>
+                    <select id="typeFilter" class="w-full md:w-48 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="all">全部类型</option>
+                        <option value="正餐">正餐</option>
+                        <option value="快餐">快餐</option>
+                        <option value="小吃">小吃</option>
+                        <option value="咖啡饮品">咖啡饮品</option>
+                        <option value="火锅">火锅</option>
+                        <option value="日料">日料</option>
+                        <option value="烧烤">烧烤</option>
+                        <option value="美食广场">美食广场</option>
+                        <option value="轻食">轻食</option>
+                        <option value="异国料理">异国料理</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-auto">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">距离范围</label>
+                    <select id="distanceFilter" class="w-full md:w-48 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="500">500米</option>
+                        <option value="800">800米</option>
+                        <option value="1000" selected>1000米</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <button id="randomBtn" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                    <i class="fas fa-random mr-2"></i>随机选择
+                </button>
+            </div>
+        </div>
+
+        <div id="resultContainer" class="glassmorphism p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-indigo-700">随机推荐</h2>
+                <button id="rechooseBtn" class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center">
+                    <i class="fas fa-sync-alt mr-1"></i>重新选择
+                </button>
+            </div>
+            <div id="restaurantCard" class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                <div class="md:flex">
+                    <div id="restaurantImage" class="md:w-1/3 h-48 md:h-full bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                    </div>
+                    <div class="p-6 md:w-2/3">
+                        <h3 id="restaurantName" class="text-xl font-bold text-gray-800 mb-2"></h3>
+                        <p id="restaurantAddress" class="text-gray-600 mb-3"></p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span id="restaurantType" class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm"></span>
+                            <span id="restaurantDistance" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-6 text-gray-500 text-sm">
+        <p>created by <a href="https://space.coze.cn" class="text-indigo-600 hover:text-indigo-800">coze space</a></p>
+        <p>页面内容均由 AI 生成，仅供参考</p>
+    </footer>
+
+    <script>
+        // 餐厅数据管理模块
+        const RestaurantData = {
+            restaurants: [
+                { id: "B0KAKRU9EL", name: "Bouffant颂甜轻食餐厅(文洋大厦A栋店)", address: "协和路1033号文洋大厦A103室", image: "", type: "轻食", distance: 800 },
+                { id: "B0FFJBXVU9", name: "建滔诺富特酒店·悦餐厅", address: "北翟路1073号建滔诺富特酒店2层", image: "http://store.is.autonavi.com/showpic/83344a26bb877b78c3f7c354095df28c", type: "正餐", distance: 600 },
+                { id: "B0K0K99JHW", name: "宜家小餐馆", address: "金钟路788号荟聚Livat F1层", image: "", type: "快餐", distance: 900 },
+                { id: "B0JK26T6XY", name: "觅语餐厅(建滔商业广场店)", address: "通协路269号建滔商业广场F1层", image: "http://store.is.autonavi.com/showpic/f9b4656c713b67c84004ce1a4be9fcd6", type: "正餐", distance: 700 },
+                { id: "B0KDG4INSI", name: "蓝波旺中餐厅(建滔商业广场店)", address: "通协路269号建滔商业广场B1层", image: "", type: "正餐", distance: 700 },
+                { id: "B0JUMA4R09", name: "Food compass(建滔商业广场中庭6号楼店)", address: "通协路269号建滔商业广场F1层", image: "http://store.is.autonavi.com/showpic/cbd38baecace46a6f4ca041b0bd020d4", type: "轻食", distance: 700 },
+                { id: "B0K60GYL4W", name: "PHO EVER粉野越南餐厅(IBP尚品都汇店)", address: "通协路268号IBP尚品都汇", image: "", type: "异国料理", distance: 750 },
+                { id: "B0LDURFPA0", name: "稻湘情时尚智选餐厅(旭辉虹桥国际店)", address: "旭辉·虹桥国际1号楼", image: "", type: "正餐", distance: 850 },
+                { id: "B0L6SR5PZT", name: "小女当家(凌空店)", address: "金钟路968号9号楼B1-18", image: "http://store.is.autonavi.com/showpic/319de96c49e36607a205a53274b64daa", type: "快餐", distance: 300 },
+                { id: "B0FFKSIQB0", name: "清真传统牛肉面商务套餐(凌空SOHO店)", address: "金钟路968号9号楼地下一层9-20室", image: "http://store.is.autonavi.com/showpic/e0665a1bfa055ced3670ff0f10505902", type: "快餐", distance: 300 },
+                { id: "B0KBKRF2KN", name: "鲜味牛牛肉汤(凌空SOHO10号楼店)", address: "金钟路968号(近协和路)凌空SOHO10号楼", image: "", type: "小吃", distance: 350 },
+                { id: "B0G0TYCT0R", name: "大米先生(凌空SOHO二店)", address: "金钟路968号凌空SOHO12号楼一层商铺12-105-3号", image: "http://store.is.autonavi.com/showpic/14dee5053fe9eb5c2b767e2ca50c79ef", type: "快餐", distance: 400 },
+                { id: "B0K64NJYTA", name: "金大妈拌饭(凌空SOHO店)", address: "金钟路968号凌空SOHO6号楼B1层", image: "", type: "快餐", distance: 200 },
+                { id: "B0FFHCG20L", name: "全州印象(凌空SOHO店)", address: "金钟路968号凌空SOHO6号楼B1层", image: "http://store.is.autonavi.com/showpic/21d32e17dc3e3255874954a6ecae4ee1", type: "异国料理", distance: 200 },
+                { id: "B0JRXR8DRZ", name: "楚褚热干面(凌空SOHO店)", address: "淞虹路968号B1层9-13B", image: "", type: "小吃", distance: 250 },
+                { id: "B0FFHIDF4F", name: "麦当劳(凌空SOHO店)", address: "金钟路968号的凌空SOHO B1商业B1-21室", image: "http://store.is.autonavi.com/showpic/7312818c670d7806deb485b555cb1002", type: "快餐", distance: 200 },
+                { id: "B0FFI6YBBW", name: "杨国福麻辣烫(凌空SOHO店)", address: "金钟路968号凌空SOHO6号楼B1层", image: "http://store.is.autonavi.com/showpic/babd3dd8cf9cc14bd886e4ed7023b2d3", type: "小吃", distance: 200 },
+                { id: "B0LDV954AY", name: "阿食米线", address: "金钟路968号(近协和路)Skybridge HQ天会", image: "", type: "小吃", distance: 150 },
+                { id: "B0LUXXP78X", name: "金舟九星川麻辣烫麻辣拌", address: "金钟路968号(近协和路)Skybridge HQ天会", image: "", type: "小吃", distance: 150 },
+                { id: "B0IUJUKTZ9", name: "老乡鸡(凌空SOHO店)", address: "金钟路968号(近协和路)凌空SOHO10号楼", image: "http://store.is.autonavi.com/showpic/418438435e67f68fa688e46b54be968a", type: "快餐", distance: 350 },
+                { id: "B0JKA470MK", name: "盖饭湘(凌空soho店)", address: "金钟路968号凌空S0H0盖饭湘9-12负1楼", image: "http://store.is.autonavi.com/showpic/e2143b4e2c2eb4e6117f7e25ef4368c6", type: "快餐", distance: 250 },
+                { id: "B0HGZ73QFL", name: "大鼓牛杂(凌空soho9号楼店)", address: "新泾镇金钟路968号9号楼地下一层27A室", image: "http://store.is.autonavi.com/showpic/f176e10090fa1af91402151179c558e6", type: "小吃", distance: 300 },
+                { id: "B0IDVH5IKK", name: "成都你六姐·牛肉冒菜(上海凌空soho店)", address: "新泾镇凌空SOHO8号楼Skybridge HQ天会", image: "https://aos-comment.amap.com/B0IDVH5IKK/comment/5a7054ddd5ca8b462b678e222bb81ae6_2048_2048_80.jpg", type: "小吃", distance: 200 },
+                { id: "B0KDSL0V7S", name: "蒋小湘·长沙现炒盖码饭(凌空SOHO3Q店)", address: "金钟路968号凌空SOHO3Q B1层", image: "", type: "快餐", distance: 250 },
+                { id: "B0FFJJ5TYQ", name: "陕老顺(金钟路店)", address: "金钟路968号Skybridge HQ天会B1层", image: "http://store.is.autonavi.com/showpic/4e2aa1249b354a96bb0fb23c74eec8e2", type: "小吃", distance: 150 },
+                { id: "B0J26XWZWD", name: "沙县小吃(Skybridge HQ天会店)", address: "金钟路968号Skybridge HQ天会F1层", image: "http://store.is.autonavi.com/showpic/21251ef7d3b9f25d9c0dd63d180bfb6b", type: "小吃", distance: 150 },
+                { id: "B0JR4H9HM0", name: "塔斯汀中国汉堡(长宁天会店)", address: "金钟路968号12号楼一层商铺12-105-1C", image: "http://store.is.autonavi.com/query_pic?id=st188d3e8c-ef58-4506-9325-47904f7f9763&user=search&operate=original", type: "快餐", distance: 400 },
+                { id: "B0J3VK4QH5", name: "河南优质烩面(凌空SOHO店)", address: "金钟路968号Skybridge HQ天会F1层", image: "http://store.is.autonavi.com/showpic/05122c9f6c9717f7372d94d71331be5d", type: "小吃", distance: 150 },
+                { id: "B0KK75JF6I", name: "A&Z OPTION COFFEE", address: "金钟路968号凌空SOHO6号楼105C", image: "https://aos-comment.amap.com/B0KK75JF6I/comment/content_media_external_file_111916_ss__1745744148494_72185228.jpg", type: "咖啡饮品", distance: 250 },
+                { id: "B0JUAXY140", name: "CUBIC3三立方咖啡(凌空七号楼店)", address: "金钟路968号凌空soho7号楼103b", image: "https://aos-comment.amap.com/B0JUAXY140/comment/fb3cad92463149c154e6f9027c91856b_2048_2048_80.jpg", type: "咖啡饮品", distance: 350 },
+                { id: "B0KG4GGKAX", name: "Rezen Cafe丽呈咖啡", address: "金钟路968号(近协和路)Skybridge HQ天会", image: "", type: "咖啡饮品", distance: 200 },
+                { id: "B0I275OPX1", name: "M Stand(凌空SOHO店)", address: "凌空SOHO7号楼103a", image: "http://store.is.autonavi.com/showpic/1ccda8d1e85d845e46afd866463b040a", type: "咖啡饮品", distance: 350 },
+                { id: "B0KK15UDPK", name: "BeanStar比星咖啡(上海凌空SOHO店)", address: "凌空SOHO大楼12号楼1层", image: "http://store.is.autonavi.com/showpic/d9802113faeda25b8738abeaf7246e74", type: "咖啡饮品", distance: 400 },
+                { id: "B0FFHC7CXC", name: "星巴克(凌空广场店)", address: "金钟路968号凌空SOHO广场2号楼2-106室(喷泉附近)", image: "http://store.is.autonavi.com/showpic/15168b6672c6a72e61c28b0f4ee3a51c", type: "咖啡饮品", distance: 100 },
+                { id: "B0JAOSXAEF", name: "星巴克沿街取餐点(凌空广场携程店)", address: "金钟路skybridgehq天会", image: "https://img.alicdn.com/imgextra/i3/O1CN018mCxsV1RcVTziqMIA_!!6000000002132-0-tps-1000-1000.jpg", type: "咖啡饮品", distance: 150 },
+                { id: "B0LBTZ4Y21", name: "贝瑞咖啡(上海金钟路店)", address: "金钟路968号凌空SOHO18号楼105-3", image: "", type: "咖啡饮品", distance: 450 },
+                { id: "B0FFGKE3BW", name: "星巴克(凌空广场携程店)", address: "金钟路968号凌空SOHO16号楼一层商铺16-101", image: "http://store.is.autonavi.com/showpic/9640f4a479e3395250ba7a18d1138dc1", type: "咖啡饮品", distance: 500 },
+                { id: "B0KRRAT6QX", name: "Tims天好咖啡(凌空SOHO店)", address: "金钟路999号3幢一层101室", image: "http://store.is.autonavi.com/showpic/30e6b9cfacb16f2fd39d3b51ff5057cb", type: "咖啡饮品", distance: 950 },
+                { id: "B0FFI3EIMP", name: "瑞幸咖啡(凌空SOHO二号楼店)", address: "新泾镇金钟路968号凌空SOHO2号楼104B号铺", image: "http://store.is.autonavi.com/showpic/986c1bc17332807d62419ab9dcc2e9f5", type: "咖啡饮品", distance: 100 },
+                { id: "B0G2AOBWRJ", name: "库迪咖啡(凌空SOHO18号楼店)", address: "金钟路968号凌空SOHO18号楼1层105-3(中庭)", image: "https://img.alicdn.com/imgextra/i1/O1CN01kkVpI81YwNz4k48ya_!!6000000003123-2-tps-135-135.png", type: "咖啡饮品", distance: 450 },
+                { id: "B0K2OU286G", name: "左庭右院鲜牛肉火锅(上海荟聚店)", address: "金钟路788号荟聚Livat F4层", image: "http://store.is.autonavi.com/query_pic?id=ste375ae94-fd8f-40b3-8c86-276a53440be5&user=search&operate=original", type: "火锅", distance: 900 },
+                { id: "B0K29ZTTG2", name: "巴奴毛肚火锅(上海荟聚店)", address: "金钟路788号L03层03C16号", image: "http://store.is.autonavi.com/query_pic?id=st1497e3b4-8d29-4541-9827-b587ed484e3d&user=search&operate=original", type: "火锅", distance: 900 },
+                { id: "B0K3YZ0TLQ", name: "苗苗山野小火锅(城市集市上海荟聚店)", address: "金钟路788号荟聚LivatB2层", image: "http://store.is.autonavi.com/showpic/ed429e62bec99c3d14227f4b2137ce7d", type: "火锅", distance: 900 },
+                { id: "B0K2OU8EQI", name: "沙胆彪炭炉牛杂煲(上海荟聚店)", address: "金钟路788号上海荟聚LB1-C19", image: "https://aos-comment.amap.com/B0K2OU8EQI/comment/content_media_external_file_1000046969_ss__1746547699050_21812139.jpg", type: "火锅", distance: 900 },
+                { id: "B0K27AOL70", name: "京玖涮肉", address: "上海荟聚L4-04C08(淞虹路地铁站5号口步行470米)", image: "https://aos-comment.amap.com/B0K27AOL70/comment/C541B3A7_46CA_465F_83F3_B57A03B3C3DE_L0_001_2000_1500_1732539602002_72593093.jpg", type: "火锅", distance: 900 },
+                { id: "B0K2OU4BRQ", name: "三出山火锅(上海荟聚店)", address: "金钟路788号上海荟聚F3层03B03", image: "https://aos-comment.amap.com/B0K2OU4BRQ/comment/544da849de3abf0eb6ca3c23fe731293_2048_2048_80.jpg", type: "火锅", distance: 900 },
+                { id: "B0K2X9DYCA", name: "小绪牧场牛肉小火锅(上海荟聚店)", address: "金钟路788号上海荟聚B2层", image: "https://aos-comment.amap.com/B0K2X9DYCA/comment/content_media_external_images_media_140076_ss__1739599429117_71842282.jpg", type: "火锅", distance: 900 },
+                { id: "B0H6GCZBAR", name: "沪鼎记·小心汤很特别(建滔广场店)", address: "通协路269号1号楼1楼103室(建滔商业广场)", image: "https://aos-comment.amap.com/B0H6GCZBAR/comment/9ecbf9445724b42b4d3429e6f354e654_2048_2048_80.jpg", type: "正餐", distance: 700 },
+                { id: "B0FFLLWJ3K", name: "石塘美食城(临空经济园区创业楼店)", address: "协和路787号C北座一楼西", image: "http://store.is.autonavi.com/showpic/34d66830f12875f376995e44e646d2de", type: "美食广场", distance: 550 },
+                { id: "B0JKJ9MC2L", name: "周味美食城香锅冒菜", address: "绿朋大厦A座正门旁(淞虹路地铁站1号口步行420米)", image: "http://store.is.autonavi.com/showpic/2a181fdbe4d40b04ee63cdf6c37063fe", type: "美食广场", distance: 450 },
+                { id: "B0LUF92M2Q", name: "地下美食城", address: "金钟路633号晨讯科技大楼B楼", image: "", type: "美食广场", distance: 850 },
+                { id: "B0KR99CSXT", name: "建滔美食广场", address: "协和路与通协路交叉口北240米", image: "", type: "美食广场", distance: 700 },
+                { id: "B0FFHEN9O6", name: "食其家·牛丼咖喱(凌空SOHO店)", address: "金钟路968号凌空SOHOB1层", image: "http://store.is.autonavi.com/showpic/dae255da1bae294c10b78f939c4eaa1f", type: "日料", distance: 200 },
+                { id: "B0G2M1ZNYA", name: "九州场居酒屋(凌空SOHO店)", address: "金钟路968号凌空SOHO7号楼103G室(商场内)", image: "https://aos-comment.amap.com/B0G2M1ZNYA/comment/fb79172e9c703c57eff9e8ae185814ec_2048_2048_80.jpg", type: "日料", distance: 350 },
+                { id: "B0LAZRXZA1", name: "冬之雪日料", address: "金钟路968号15号楼105室", image: "https://aos-comment.amap.com/B0LAZRXZA1/comment/content_media_external_file_100000276_1748431142908_87400668.jpg", type: "日料", distance: 500 },
+                { id: "B0K2XRDB7A", name: "万牛和牛烧肉(荟聚黑金店)", address: "金钟路788号L04层04B01号", image: "http://store.is.autonavi.com/showpic/98d16e2b8fc45e8e670b603b9f8f8618", type: "日料/烧烤", distance: 900 },
+                { id: "B0K2OU286O", name: "丼丼屋(上海荟聚店)", address: "金钟路788号LB1层B1B17号", image: "https://aos-comment.amap.com/B0K2OU286O/comment/403C586E_437C_4B99_AD75_778F573E4DF1_L0_001_1512_2016_1728182453178_85554406.jpg", type: "日料", distance: 900 },
+                { id: "B0K21LUDZI", name: "一绪寿喜烧(上海荟聚店)", address: "金钟路788号荟聚中心L4楼04C05", image: "http://store.is.autonavi.com/query_pic?id=st51bbf0f0-2bf6-434e-8dd9-08db2749b250&user=search&operate=original", type: "日料/火锅", distance: 900 },
+                { id: "B0K0K1AKVR", name: "新秀日本创意料理", address: "宜家荟聚", image: "", type: "日料", distance: 900 },
+                { id: "B0K2OU7K1R", name: "MAKI HOUSE寿町", address: "金钟路788号上海荟聚LG1层", image: "http://store.is.autonavi.com/showpic/69a3df45403e9794d0693188f4ba0e9a", type: "日料", distance: 900 },
+                { id: "B0K2OU286J", name: "鮨和歌", address: "金钟路788号荟聚Livat F4层", image: "http://store.is.autonavi.com/showpic/a5fe5384ea9236929985bf972e34b8a2", type: "日料", distance: 900 },
+                { id: "B0K2OU7K04", name: "鮨谷", address: "金钟路788号荟聚Livat F2层", image: "https://aos-comment.amap.com/B0K2OU7K04/comment/content_media_external_images_media_1000049083_ss__1733212777467_95727581.jpg", type: "日料", distance: 900 },
+                { id: "B0K0KDCGLD", name: "様Sama寿司·吉利串烧(城市集市上海荟聚店)", address: "金钟路788号荟聚LivatB2层", image: "", type: "日料", distance: 900 },
+                { id: "B0K3YSDB37", name: "司乎日式鲜吐司(上海荟聚店)", address: "金钟路788号上海荟聚B2层", image: "https://aos-comment.amap.com/B0K3YSDB37/comment/8A25A455_72DD_47DD_8BB0_6BEEAEE61942_L0_001_2000_1502_1730310688940_67340997.jpg", type: "甜品", distance: 900 },
+                { id: "B0FFJTQVNN", name: "食其家·牛丼咖喱(建滔商业广场店)", address: "通协路269号建滔商业广场F1层", image: "http://store.is.autonavi.com/showpic/30d215c8031d0f618ee3ce01d2c11fd6", type: "日料", distance: 700 },
+                { id: "B0JKPZQWDV", name: "有时有十·商务聚会小酒馆", address: "金钟路968号11号楼1楼-105室", image: "https://aos-comment.amap.com/B0JKPZQWDV/comment/091ede68ef5b821022a54bd7f9163bb5_2048_2048_80.jpg", type: "烧烤", distance: 450 },
+                { id: "B0K3YS812E", name: "福满唐五花烤肉双拼", address: "金钟路788号荟聚LivatB2层", image: "http://store.is.autonavi.com/showpic/df482a1c26cac14dab522ac28ce03b9e", type: "烧烤", distance: 900 },
+                { id: "B0K2ZU56GN", name: "很久以前羊肉串(上海荟聚店)", address: "金钟路788号上海荟聚F4层", image: "http://store.is.autonavi.com/showpic/c62f852aa2785ce9993424a45c2a0dd1?type=7", type: "烧烤", distance: 900 },
+                { id: "B0FFIG4KJ1", name: "张雷烧烤", address: "新泾镇协和路792号(淞虹路地铁站4号口步行400米)", image: "https://aos-comment.amap.com/B0FFIG4KJ1/comment/6f768837efb41a6063dc62d9f1ce03f1_2048_2048_80.jpg", type: "烧烤", distance: 450 },
+                { id: "B0IA3XGWD0", name: "大馥烧肉(淞虹路大融城店)", address: "淞虹路大融城一层(淞虹路地铁站3号口步行170米)", image: "https://aos-comment.amap.com/B0IA3XGWD0/comment/1a4f28180ff423f910f9b53102bfac61_2048_2048_80.jpg", type: "烧烤", distance: 550 },
+                { id: "B0JDUUXVB0", name: "木屋烧烤(长宁大融城店)", address: "淞虹路377号长宁Art Park大融城F1层", image: "https://aos-comment.amap.com/B0JDUUXVB0/comment/b13ca5b4a4efcc82f6771c1880e5a48a_2048_2048_80.jpg", type: "烧烤", distance: 550 }
+            ],
+
+            // 根据条件筛选餐厅
+            filterRestaurants: function(type, distance) {
+                return this.restaurants.filter(restaurant => {
+                    return (type === 'all' || restaurant.type.includes(type)) && 
+                           restaurant.distance <= distance;
+                });
+            },
+
+            // 随机选择餐厅
+            getRandomRestaurant: function(filteredRestaurants) {
+                if (filteredRestaurants.length === 0) return null;
+                const randomIndex = Math.floor(Math.random() * filteredRestaurants.length);
+                return filteredRestaurants[randomIndex];
+            }
+        };
+
+        // UI渲染模块
+        const UIRenderer = {
+            // 显示餐厅信息
+            displayRestaurant: function(restaurant) {
+                document.getElementById('restaurantName').textContent = restaurant.name;
+                document.getElementById('restaurantAddress').textContent = restaurant.address;
+                document.getElementById('restaurantType').textContent = restaurant.type;
+                document.getElementById('restaurantDistance').textContent = `${restaurant.distance}米`;
+
+                // 设置图片
+                const restaurantImage = document.getElementById('restaurantImage');
+                restaurantImage.innerHTML = '';
+                if (restaurant.image) {
+                    const img = document.createElement('img');
+                    img.src = restaurant.image;
+                    img.alt = restaurant.name;
+                    img.className = 'w-full h-full object-cover';
+                    restaurantImage.appendChild(img);
+                } else {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-image text-4xl text-gray-400';
+                    restaurantImage.appendChild(icon);
+                }
+
+                // 显示结果容器并添加动画
+                document.getElementById('resultContainer').classList.remove('hidden');
+                const restaurantCard = document.getElementById('restaurantCard');
+                restaurantCard.classList.add('flip-animation');
+                setTimeout(() => {
+                    restaurantCard.classList.remove('flip-animation');
+                }, 800);
+            },
+
+            // 显示错误信息
+            showError: function(message) {
+                alert(message);
+            }
+        };
+
+        // 主控制器模块
+        const AppController = {
+            init: function() {
+                this.bindEvents();
+            },
+
+            bindEvents: function() {
+                // 随机选择按钮点击事件
+                document.getElementById('randomBtn').addEventListener('click', () => {
+                    this.handleRandomSelection();
+                });
+
+                // 重新选择按钮点击事件
+                document.getElementById('rechooseBtn').addEventListener('click', () => {
+                    this.handleRandomSelection();
+                });
+            },
+
+            handleRandomSelection: function() {
+                const selectedType = document.getElementById('typeFilter').value;
+                const selectedDistance = parseInt(document.getElementById('distanceFilter').value);
+                
+                // 筛选餐厅
+                const filteredRestaurants = RestaurantData.filterRestaurants(selectedType, selectedDistance);
+                
+                if (filteredRestaurants.length === 0) {
+                    UIRenderer.showError('没有找到符合条件的餐厅，请调整筛选条件！');
+                    return;
+                }
+
+                // 随机选择餐厅
+                const selectedRestaurant = RestaurantData.getRandomRestaurant(filteredRestaurants);
+                
+                // 显示餐厅信息
+                UIRenderer.displayRestaurant(selectedRestaurant);
+            }
+        };
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', function() {
+            AppController.init();
+        });
+    </script>
+</body>
+</html>
